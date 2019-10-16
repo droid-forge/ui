@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PromiseUI</string>
+    <string name="progressActivityErrorButton">Try Again</string>
+
+    <string name="progressActivityEmptyTitlePlaceholder">Nothing Here</string>
+    <string name="progressActivityEmptyContentPlaceholder">We couldn\'t find anything. Tap the button to take your first image</string>
+</resources>
