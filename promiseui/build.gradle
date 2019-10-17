@@ -47,9 +47,7 @@ android {
 }
 
 dependencies {
-    implementation files('libs/NineOldAndroid-2.4.0.jar')
-    implementation files('libs/AndroidViewAnimations-1.1.3.jar')
-    implementation files('libs/AndroidEasingFunctions-1.0.0.jar')
+
     implementation "com.android.support:exifinterface:$project.ext.supportLibVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$project.ext.kotlin_version"
     api 'com.github.android-promise:commons:1.0-beta2'

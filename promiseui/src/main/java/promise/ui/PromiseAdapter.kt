@@ -37,9 +37,6 @@ import promise.commons.data.log.LogUtil
 import promise.commons.model.List
 import promise.commons.model.function.MapFunction
 import promise.commons.util.Conditions
-import promise.ui.anim.Anim
-import promise.ui.anim.AnimDuration
-import promise.ui.anim.Animator
 import promise.ui.model.Viewable
 import promise.ui.model.ViewableInstance
 
@@ -54,9 +51,6 @@ open class PromiseAdapter<T>(list: List<T>, var listener: Listener<T>?) : Recycl
   private var list: List<ViewableInstance<T>>? = null
   var longClickListener: LongClickListener<T>? = null
   private var swipeListener: Swipe<T>? = null
-  var anim: Anim? = null
-  var animDuration: AnimDuration? = null
-  var waitDuration: AnimDuration? = null
   private var alternatingColor = 0
   private var onAfterInitListener: OnAfterInitListener? = null
 
@@ -203,12 +197,6 @@ open class PromiseAdapter<T>(list: List<T>, var listener: Listener<T>?) : Recycl
       if (alternatingColor != 0)
         if (position % 2 == 1) holder.view.setBackgroundColor(alternatingColor)
       holder.bind(t)
-      if (anim != null) {
-        val animator = Animator(holder.view, anim)
-        animator.setAnimDuration(if (animDuration == null) AnimDuration.standard() else animDuration)
-        animator.waitDuration = if (waitDuration == null) AnimDuration.noDuration() else waitDuration
-        animator.animate()
-      }
     }
   }
 

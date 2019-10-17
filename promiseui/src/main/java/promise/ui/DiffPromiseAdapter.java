@@ -39,9 +39,6 @@ import java.util.Arrays;
 import promise.commons.data.log.LogUtil;
 import promise.commons.model.List;
 import promise.commons.util.Conditions;
-import promise.ui.anim.Anim;
-import promise.ui.anim.AnimDuration;
-import promise.ui.anim.Animator;
 import promise.ui.model.Viewable;
 
 
@@ -54,9 +51,6 @@ public class DiffPromiseAdapter<T extends Viewable> extends ListAdapter<T, DiffP
   private Listener<T> listener;
   private LongClickListener<T> longClickListener;
   private Swipe<T> swipeListener;
-  private Anim anim;
-  private AnimDuration animDuration;
-  private AnimDuration waitDuration;
   private int alternatingColor = 0;
   private OnAfterInitListener onAfterInitListener;
 
@@ -221,12 +215,7 @@ public class DiffPromiseAdapter<T extends Viewable> extends ListAdapter<T, DiffP
     holder.bind(t);
     holder.bindListener(t);
     holder.bindLongClickListener(t);
-    if (anim != null) {
-      Animator animator = new Animator(holder.view, anim);
-      animator.setAnimDuration(animDuration == null ? AnimDuration.standard() : animDuration);
-      animator.setWaitDuration(waitDuration == null ? AnimDuration.noDuration() : waitDuration);
-      animator.animate();
-    }
+
   }
 
   public List<T> getList() {
@@ -267,30 +256,6 @@ public class DiffPromiseAdapter<T extends Viewable> extends ListAdapter<T, DiffP
 
   public void reverse(boolean reverse) {
     indexer.reverse(reverse);
-  }
-
-  public Anim getAnim() {
-    return anim;
-  }
-
-  public void setAnim(Anim anim) {
-    this.anim = anim;
-  }
-
-  public AnimDuration getAnimDuration() {
-    return animDuration;
-  }
-
-  public void setAnimDuration(AnimDuration animDuration) {
-    this.animDuration = animDuration;
-  }
-
-  public AnimDuration getWaitDuration() {
-    return waitDuration;
-  }
-
-  public void setWaitDuration(AnimDuration waitDuration) {
-    this.waitDuration = waitDuration;
   }
 
   public interface Listener<T> {
