@@ -17,23 +17,16 @@ package promise.ui;
 
 import promise.commons.model.List;
 import promise.commons.model.Result;
-import promise.ui.model.Viewable;
 
 /**
- *
  * @param <T>
  */
-public interface DataSource<T extends Viewable> {
-    /**
-     *
-     * @param response
-     */
-    void load(Result<List<T>, ?> response);
+public interface DataSource<T> {
 
     /**
-     *
      * @param response
-     * @param index
+     * @param skip the offset index of data to load
+     * @param take, the number of items to load
      */
-    void load(Result<List<T>, ?> response, int index);
+    void load(Result<List<T>, ?> response, int skip, int take);
 }

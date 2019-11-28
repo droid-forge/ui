@@ -19,13 +19,18 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import androidx.annotation.IdRes
 import androidx.collection.ArrayMap
 import androidx.recyclerview.widget.*
 import promise.commons.Promise
 import promise.commons.data.log.LogUtil
 import promise.commons.model.List
+import promise.commons.model.Result
 import promise.commons.util.Conditions
+import promise.ui.model.LoadingViewable
+import promise.ui.model.Searchable
 import promise.ui.model.Viewable
 import promise.ui.model.ViewableInstance
 import java.util.*
@@ -34,16 +39,24 @@ import kotlin.reflect.KClass
 /**
  * Created by yoctopus on 11/6/17.
  */
-open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : RecyclerView.Adapter<PromiseAdapter<T>.Holder>() {
+open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : RecyclerView.Adapter<PromiseAdapter<T>.Holder>(), Filterable {
+
+
 
     private val TAG = LogUtil.makeTag(PromiseAdapter::class.java)
     private val AdapterItems = "__adapter_items__"
     private val indexer: Indexer
-    private var list: List<ViewableInstance<T>>? = null
+    private var list: List<Any>? = null
     var longClickListener: LongClickListener<T>? = null
     private var swipeListener: Swipe<T>? = null
     private var alternatingColor = 0
     private var onAfterInitListener: OnAfterInitListener? = null
+
+    private var dataSource: DataSource<T>? = null
+    private var loadingView: LoadingViewable? = null
+    private var visibleThreshold = 10
+
+    private lateinit var originalList: List<T>
 
     private var viewableClasses: MutableMap<String, KClass<out Viewable>>? = null
 
@@ -60,24 +73,11 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
     }
 
     init {
-        this.list = Conditions.checkNotNull(list.map { ViewableInstance(it) })
+        this.list = List()
+        list.forEach {
+            this.list!!.add(ViewableInstance(it))
+        }
         indexer = Indexer()
-    }
-
-    /* public void restoreViewState(Bundle instanceState) {
-      List<Parcelable> items = new List<>(instanceState.getParcelableArrayList(AdapterItems));
-      if (items.isEmpty()) return;
-      this.list = items.map(parcelable -> (T) parcelable);
-      indexList();
-    }
-
-    public void backupViewState(Bundle instanceState) {
-      instanceState.putParcelableArrayList(AdapterItems, new ArrayList<>(list.map(viewHolder -> (Parcelable) viewHolder)));
-    }*/
-
-    @Deprecated("")
-    fun destroyViewState() {
-
     }
 
     fun swipe(swipeListener: Swipe<T>): PromiseAdapter<T> {
@@ -95,19 +95,29 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
         return this
     }
 
-    open fun add(t: T) {
+    @JvmOverloads
+    fun withPagination(dataSource: DataSource<T>,
+                       loadingView: LoadingViewable,
+                       visibleThreshold: Int = 10): PromiseAdapter<T> {
+        this.dataSource = dataSource
+        this.loadingView = loadingView
+        this.visibleThreshold = visibleThreshold
+        return this
+    }
+
+    open infix fun add(t: T) {
         indexer.add(Conditions.checkNotNull(t))
     }
 
-    fun unshift(t: T) {
+    infix fun unshift(t: T) {
         indexer.unshift(Conditions.checkNotNull(t))
     }
 
-    open fun add(list: List<T>) {
+    open infix fun add(list: List<T>) {
         indexer.add(Conditions.checkNotNull(list))
     }
 
-    fun remove(t: T) {
+    infix fun remove(t: T) {
         indexer.remove(Conditions.checkNotNull(t))
     }
 
@@ -115,7 +125,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
         indexer.updateAll()
     }
 
-    fun update(viewHolder: T) {
+    infix fun update(viewHolder: T) {
         indexer.update(Conditions.checkNotNull(viewHolder))
     }
 
@@ -124,7 +134,9 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
     }
 
     override fun getItemViewType(position: Int): Int {
-        val viewableInstance = list!![position]
+        var viewableInstance = list!![position]
+        if (viewableInstance is LoadingViewable) return TYPE_LOADING
+        viewableInstance = viewableInstance as ViewableInstance<T>
         if (viewableClasses != null) {
             val tClass = viewableInstance.t.javaClass
             if (viewableClasses!!.containsKey(tClass.name)) {
@@ -139,6 +151,12 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
+       if (viewType == TYPE_LOADING) {
+           val view = LayoutInflater.from(parent.context).inflate(loadingView!!.layout(),
+                   parent, false)
+           if (onAfterInitListener != null) onAfterInitListener!!.onAfterInit(view)
+           return LoadingHolder(view, loadingView!!)
+       }
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
         if (onAfterInitListener != null) onAfterInitListener!!.onAfterInit(view)
         return Holder(view)
@@ -155,9 +173,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
             val reverse = manager.reverseLayout
             recyclerView.layoutManager = WrapContentLinearLayoutManager(recyclerView.context, orientation, reverse)
         }
-        /*if (recyclerView.getItemAnimator() != null) {
-          recyclerView.setItemAnimator(new CustomItemAnimator());
-        }*/
+
         if (swipeListener != null) {
             val simpleCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
                 override fun onMove(
@@ -183,22 +199,65 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
             }
             ItemTouchHelper(simpleCallback).attachToRecyclerView(recyclerView)
         }
+
+        if (dataSource != null) {
+            recyclerView.addOnScrollListener(PaginationListener(this,
+                    dataSource!!, loadingView!!, recyclerView.layoutManager!!, visibleThreshold ))
+            addLoadingView()
+            dataSource!!.load(Result<List<T>, Throwable>()
+                    .withCallBack {
+                        clear()
+                        this add it
+                    }, 0, visibleThreshold)
+
+        }
+    }
+
+    internal fun addLoadingView() {
+        this.list!!.add(loadingView)
+        notifyDataSetChanged()
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
+        if (holder is LoadingViewable) return
         val t = list!![position]
-        UIJobScheduler.submitJob {
+        if (t is ViewableInstance<*>) UIJobScheduler.submitJob {
             if (alternatingColor != 0)
                 if (position % 2 == 1) holder.view.setBackgroundColor(alternatingColor)
-            holder.bind(t)
+            holder bind t as ViewableInstance<T>
         }
     }
 
     override fun getItemCount(): Int = indexer.size()
 
-    fun getList(): List<T> = list!!.map { it.t }
+    open fun search(query: String) {
+        if (originalList == null) originalList = getList()
+        filter.filter(query)
+    }
 
-    fun setList(list: List<T>) {
+    override fun getFilter(): Filter = object : Filter() {
+        override fun performFiltering(charSequence: CharSequence): FilterResults {
+            val results = FilterResults()
+            val filterData = originalList.filter { t: T ->
+                t is Searchable &&
+                        t.onSearch(charSequence.toString())
+            }
+            results.values = filterData
+            if (!filterData.isEmpty()) results.count =
+                    filterData.size else results.count = 0
+            return results
+        }
+
+        override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) =
+                if (filterResults.count > 0)
+                    setList((filterResults.values as List<T>))
+                else setList(originalList)
+    }
+
+    fun getList(): List<T> =
+            list!!.filter { it is ViewableInstance<*> }.map { (it as ViewableInstance<T>).t }
+
+    infix fun setList(list: List<T>) {
         this.indexer.setList(list)
     }
 
@@ -206,7 +265,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
         indexer.reverse(true)
     }
 
-    fun reverse(reverse: Boolean) {
+    infix fun reverse(reverse: Boolean) {
         indexer.reverse(reverse)
     }
 
@@ -215,7 +274,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
     }
 
     interface OnAfterInitListener {
-        fun onAfterInit(view: View)
+        infix fun onAfterInit(view: View)
     }
 
     interface Response {
@@ -232,10 +291,10 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
         fun onLongClick(t: T, @IdRes id: Int)
     }
 
-    inner class Holder(var view: View) : RecyclerView.ViewHolder(view) {
+    open inner class Holder(var view: View) : RecyclerView.ViewHolder(view) {
         internal lateinit var viewableInstance: ViewableInstance<T>
 
-        internal fun bind(viewableInstance: ViewableInstance<T>) {
+        internal infix fun bind(viewableInstance: ViewableInstance<T>) {
             this.viewableInstance = viewableInstance
             this.viewableInstance.viewable().init(view)
             this.viewableInstance.viewable().bind(view)
@@ -243,7 +302,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
             bindLongClickListener()
         }
 
-        internal fun bindListener() {
+        private fun bindListener() {
             if (listener == null) return
             val kClass = viewableInstance.viewClass
             if (kClass != null) {
@@ -275,7 +334,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
             }
         }
 
-        internal fun bindLongClickListener() {
+        private fun bindLongClickListener() {
             if (longClickListener == null) return
             val kClass = viewableInstance.viewClass
             if (kClass != null) {
@@ -312,10 +371,18 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
         }
     }
 
+    inner class LoadingHolder(view1: View, loadingView: LoadingViewable) : Holder(view1) {
+
+        init {
+            loadingView.init(view1)
+        }
+
+    }
+
     private inner class Indexer {
         internal var reverse = false
 
-        internal fun add(t: T) {
+        internal infix fun add(t: T) {
             if (list == null) list = List()
             if (!list!!.isEmpty()) {
                 if (reverse) list!!.reverse()
@@ -330,12 +397,12 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
             }
         }
 
-        internal fun unshift(t: T) {
+        internal infix fun unshift(t: T) {
             if (list == null) list = List()
             if (!list!!.isEmpty()) {
                 val list1 = List<T>()
                 list1.add(t)
-                list1.addAll(list!!.map { it.t })
+                list1.addAll(list!!.map { (it as ViewableInstance<T>).t })
                 setList(list1)
                 Promise.instance().executeOnUi { this@PromiseAdapter.notifyDataSetChanged() }
             } else {
@@ -343,19 +410,19 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
             }
         }
 
-        internal fun setList(list: List<T>) {
+        internal infix fun setList(list: List<T>) {
             this@PromiseAdapter.list = list.map { ViewableInstance(it) }
             Promise.instance().executeOnUi { this@PromiseAdapter.notifyDataSetChanged() }
         }
 
-        internal fun remove(t: T) {
+        internal infix fun remove(t: T) {
             if (list == null) return
-            val instance = list!!.find { i -> i.t === t }
+            val instance = list!!.find { i -> (i as ViewableInstance<T>).t === t }
             list!!.remove(instance)
             Promise.instance().executeOnUi { this@PromiseAdapter.notifyDataSetChanged() }
         }
 
-        internal fun update(viewHolder: T) {
+        internal infix fun update(viewHolder: T) {
             /* if (list == null) return;
             ViewableInstance<T> v = list.find(i -> i.getT() == viewHolder);
             if (v == null) return;
@@ -369,7 +436,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
             Promise.instance().executeOnUi { this@PromiseAdapter.notifyDataSetChanged() }
         }
 
-        internal fun add(list: List<T>) {
+        internal infix fun add(list: List<T>) {
             for (t in list) add(t)
         }
 
@@ -381,13 +448,12 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
 
         internal fun size(): Int = if (list == null || list!!.isEmpty()) 0 else list!!.size
 
-        internal fun reverse(reverse: Boolean) {
+        internal infix fun reverse(reverse: Boolean) {
             this.reverse = reverse
         }
     }
 
     inner class WrapContentLinearLayoutManager : LinearLayoutManager {
-        constructor(context: Context) : super(context) {}
 
         constructor(context: Context, orientation: Int, reverseLayout: Boolean) : super(context, orientation, reverseLayout) {}
 
@@ -442,5 +508,10 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : 
                 return false
             }
         }
+    }
+
+    companion object {
+        const val TYPE_NORMAL = 1;
+        const val TYPE_LOADING = 2
     }
 }

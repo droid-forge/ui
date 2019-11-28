@@ -18,6 +18,7 @@ class ViewableInstance<T>(val t: T) {
         viewClassObject =  makeInstance(viewClass!!, arrayOf(t as Any)) as Viewable
         viewClassObject as Viewable
       }
+      t is LoadingViewable -> throw IllegalStateException("Data type must not implement LoadingViewable")
       t is Viewable -> t
       (t as Any).javaClass.isAnnotationPresent(promise.ui.scopes.Viewable::class.java) -> {
         val annotation = t.javaClass.getAnnotation(promise.ui.scopes.Viewable::class.java)!!

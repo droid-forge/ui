@@ -13,9 +13,7 @@ object UIJobScheduler {
 
   fun submitJob(job: () -> Unit) {
     jobQueue.add(job)
-    if (jobQueue.size == 1) {
-      Promise.instance().executeOnUi { processJobs() }
-    }
+    if (jobQueue.size == 1) Promise.instance().executeOnUi { processJobs() }
   }
 
   private fun processJobs() {

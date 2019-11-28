@@ -2,13 +2,18 @@ package promise.uiapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.collection.ArrayMap
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
+import promise.commons.Promise
 import promise.commons.data.log.LogUtil
 import promise.commons.model.List
+import promise.commons.model.Result
+import promise.ui.DataSource
 import promise.ui.PromiseAdapter
+import promise.ui.model.LoadingViewable
 import promise.ui.model.Viewable
 import promise.uiapp.models.ViewablePoJo
 import promise.uiapp.models.ViewablePoJoViewable
@@ -43,10 +48,9 @@ class MainActivity : AppCompatActivity(), PromiseAdapter.Listener<ViewablePoJo> 
     recycler_view.layoutManager = LinearLayoutManager(this)
 
     recycler_view.adapter = adapter
-    adapter.add(generate(10) {
-      ViewablePoJo("text $it")
+
+    adapter.add(generate(50) {
+      ViewablePoJo("test $it")
     })
-
-
   }
 }

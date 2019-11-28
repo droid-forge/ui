@@ -6,6 +6,6 @@ import promise.commons.Promise
 class App: Application() {
   override fun onCreate() {
     super.onCreate()
-    Promise.init(this)
+    Promise.init(this, 2)
   }
 }
