@@ -3,7 +3,6 @@ package promise.uiapp.models
 import android.view.View
 import android.widget.TextView
 import promise.ui.model.ViewHolder
-import promise.ui.scopes.Viewable
 import promise.uiapp.R
 
 class ViewablePoJoViewable(private val viewablePoJo: ViewablePoJo) : promise.ui.model.Viewable {
@@ -36,5 +35,5 @@ class ViewablePoJoViewHolder(private val viewablePoJo: ViewablePoJo) : ViewHolde
   lateinit var textView: TextView
 }
 
-@Viewable(layoutResource = R.layout.pojo_layout, viewHolderClass = ViewablePoJoViewHolder::class)
+//@Viewable(layoutResource = R.layout.pojo_layout, viewHolderClass = ViewablePoJoViewHolder::class)
 class ViewablePoJo(val text: String)

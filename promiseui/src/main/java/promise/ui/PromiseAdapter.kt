@@ -34,7 +34,7 @@ import kotlin.reflect.KClass
 /**
  * Created by yoctopus on 11/6/17.
  */
-open class PromiseAdapter<T>(list: List<T>, var listener: Listener<T>?) : RecyclerView.Adapter<PromiseAdapter<T>.Holder>() {
+open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?) : RecyclerView.Adapter<PromiseAdapter<T>.Holder>() {
 
     private val TAG = LogUtil.makeTag(PromiseAdapter::class.java)
     private val AdapterItems = "__adapter_items__"
@@ -51,12 +51,12 @@ open class PromiseAdapter<T>(list: List<T>, var listener: Listener<T>?) : Recycl
         get() = indexer.reverse
         private set(reverse) = this.indexer.reverse(reverse)
 
-    constructor(listener: Listener<T>) : this(List<T>(), listener)
+    constructor(listener: Listener<T>?) : this(List<T>(), listener)
 
-    constructor(viewableClasses: Map<Class<*>, KClass<out Viewable>>, listener: Listener<T>) : this(List<T>(), listener) {
+    constructor(viewableClasses: Map<Class<*>, KClass<out Viewable>>, listener: Listener<T>?) : this(List<T>(), listener) {
         this.viewableClasses = ArrayMap()
         for ((key, value) in viewableClasses)
-            this.viewableClasses!![key.simpleName] = value
+            this.viewableClasses!![key.name] = value
     }
 
     init {
@@ -126,9 +126,9 @@ open class PromiseAdapter<T>(list: List<T>, var listener: Listener<T>?) : Recycl
     override fun getItemViewType(position: Int): Int {
         val viewableInstance = list!![position]
         if (viewableClasses != null) {
-            val tClass = (viewableInstance.t as Any).javaClass
-            if (viewableClasses!!.containsKey(tClass.simpleName)) {
-                val kClass = viewableClasses!![tClass.simpleName]
+            val tClass = viewableInstance.t.javaClass
+            if (viewableClasses!!.containsKey(tClass.name)) {
+                val kClass = viewableClasses!![tClass.name]
                 viewableInstance.viewClass = kClass
             }
         }
