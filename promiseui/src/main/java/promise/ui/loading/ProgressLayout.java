@@ -163,16 +163,16 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
 
   @Override
   public void showContent() {
-    switchState(CONTENT, 0, null, null, null, null, Collections.<Integer>emptyList());
+    switchState(CONTENT, 0, null, null, null, null, Collections.<Integer>emptyList(), null);
   }
 
   @Override
   public void showContent(List<Integer> idsOfViewsNotToShow) {
-    switchState(CONTENT, 0, null, null, null, null, idsOfViewsNotToShow);
+    switchState(CONTENT, 0, null, null, null, null, idsOfViewsNotToShow, null);
   }
 
   @Override
-  public void showLoading() {
+  public void showLoading(Object args) {
     /*//Loading state attrs
     loadingStateProgressBarWidth =
         typedArray.getDimensionPixelSize(R.styleable.ProgressFrameLayout_loadingProgressBarWidth, 108);
@@ -182,62 +182,71 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
 
     loadingStateProgressBarColor =
         typedArray.getColor(R.styleable.ProgressFrameLayout_loadingProgressBarColor, Color.RED);*/
-    showLoading(new LoadingViewable().loadingStateProgressBarHeight(108).loadingStateProgressBarWidth(108));
+    showLoading(new LoadingViewable().loadingStateProgressBarHeight(108).loadingStateProgressBarWidth(108), args);
   }
 
   @Override
-  public void showLoading(Viewable viewable) {
+  public void showLoading(Viewable viewable, Object args) {
     this.loadingStateProgressBar = viewable;
-    switchState(LOADING, 0, null, null, null, null, Collections.<Integer>emptyList());
+    switchState(LOADING, 0, null, null, null, null, Collections.<Integer>emptyList(), args);
   }
 
   @Override
-  public void showLoading(List<Integer> idsOfViewsNotToHide) {
-    switchState(LOADING, 0, null, null, null, null, idsOfViewsNotToHide);
+  public void showLoading(List<Integer> idsOfViewsNotToHide, Object args) {
+    switchState(LOADING, 0, null, null, null, null, idsOfViewsNotToHide, args);
   }
 
   @Override
   public void showEmpty(int icon, String title, String description) {
-    switchState(EMPTY, icon, title, description, null, null, Collections.<Integer>emptyList());
+    switchState(EMPTY, icon, title, description, null, null, Collections.<Integer>emptyList(), null);
   }
 
   @Override
   public void showEmpty(Drawable icon, String title, String description) {
-    switchState(EMPTY, icon, title, description, null, null, Collections.<Integer>emptyList());
+    switchState(EMPTY, icon, title, description, null, null, Collections.<Integer>emptyList(), null);
   }
 
   @Override
   public void showEmpty(int icon, String title, String description, List<Integer> idsOfViewsNotToHide) {
-    switchState(EMPTY, icon, title, description, null, null, idsOfViewsNotToHide);
+    switchState(EMPTY, icon, title, description, null, null, idsOfViewsNotToHide, null);
   }
 
   @Override
-  public void showEmpty(Drawable icon, String title, String description, List<Integer> idsOfViewsNotToHide) {
-    switchState(EMPTY, icon, title, description, null, null, idsOfViewsNotToHide);
+  public void showEmpty(Drawable icon, String title,
+                        String description, List<Integer> idsOfViewsNotToHide) {
+    switchState(EMPTY, icon, title, description, null, null, idsOfViewsNotToHide, null);
   }
 
   @Override
-  public void showError(int icon, String title, String description, String buttonText, OnClickListener buttonClickListener) {
-    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, Collections.<Integer>emptyList());
+  public void showError(int icon, String title, String description,
+                        String buttonText, OnClickListener buttonClickListener) {
+    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, Collections.<Integer>emptyList(), null);
   }
 
   @Override
-  public void showError(Drawable icon, String title, String description, String buttonText, OnClickListener buttonClickListener) {
-    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, Collections.<Integer>emptyList());
+  public void showError(Drawable icon, String title,
+                        String description, String buttonText, OnClickListener buttonClickListener) {
+    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, Collections.<Integer>emptyList(),
+         null);
   }
 
   @Override
-  public void showError(int icon, String title, String description, String buttonText, OnClickListener buttonClickListener, List<Integer> idsOfViewsNotToHide) {
-    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, idsOfViewsNotToHide);
+  public void showError(int icon, String title,
+                        String description, String buttonText,
+                        OnClickListener buttonClickListener, List<Integer> idsOfViewsNotToHide) {
+    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, idsOfViewsNotToHide, null);
   }
 
   @Override
-  public void showError(Drawable icon, String title, String description, String buttonText, OnClickListener buttonClickListener, List<Integer> idsOfViewsNotToHide) {
-    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, idsOfViewsNotToHide);
+  public void showError(Drawable icon,
+                        String title, String description,
+                        String buttonText, OnClickListener buttonClickListener,
+                        List<Integer> idsOfViewsNotToHide) {
+    switchState(ERROR, icon, title, description, buttonText, buttonClickListener, idsOfViewsNotToHide, null);
   }
 
   private void switchState(String state, int icon, String title, String description,
-                           String buttonText, OnClickListener buttonClickListener, List<Integer> idsOfViewsNotToHide) {
+                           String buttonText, OnClickListener buttonClickListener, List<Integer> idsOfViewsNotToHide, Object args) {
     this.state = state;
 
     hideAllStates();
@@ -248,7 +257,7 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
         break;
       case LOADING:
         setContentVisibility(false, idsOfViewsNotToHide);
-        inflateLoadingView();
+        inflateLoadingView(args);
         break;
       case EMPTY:
         setContentVisibility(false, idsOfViewsNotToHide);
@@ -272,7 +281,7 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
   }
 
   private void switchState(String state, Drawable icon, String title, String description,
-                           String buttonText, OnClickListener buttonClickListener, List<Integer> idsOfViewsNotToHide) {
+                           String buttonText, OnClickListener buttonClickListener, List<Integer> idsOfViewsNotToHide, Object args) {
     this.state = state;
 
     hideAllStates();
@@ -283,7 +292,7 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
         break;
       case LOADING:
         setContentVisibility(false, idsOfViewsNotToHide);
-        inflateLoadingView();
+        inflateLoadingView(args);
         break;
       case EMPTY:
         setContentVisibility(false, idsOfViewsNotToHide);
@@ -334,7 +343,7 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
       if (!skipIds.contains(v.getId())) v.setVisibility(visible ? View.VISIBLE : View.GONE);
   }
 
-  private void inflateLoadingView() {
+  private void inflateLoadingView(Object args) {
     if (loadingState == null) {
       view = inflater.inflate(R.layout.view_loading, null);
       loadingState = view.findViewById(R.id.layout_loading);
@@ -343,7 +352,7 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
       FrameLayout frameLayout = view.findViewById(R.id.loading_view);
       LayoutInflater.from(frameLayout.getContext()).inflate(loadingStateProgressBar.layout(), frameLayout, true);
       loadingStateProgressBar.init(frameLayout);
-      loadingStateProgressBar.bind(frameLayout);
+      loadingStateProgressBar.bind(frameLayout, args);
       /*loadingStateProgressBar = view.findViewById(R.id.progress_bar_loading);
       loadingStateProgressBar.getLayoutParams().width = loadingStateProgressBarWidth;
       loadingStateProgressBar.getLayoutParams().height = loadingStateProgressBarHeight;

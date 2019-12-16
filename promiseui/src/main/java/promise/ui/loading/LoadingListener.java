@@ -14,10 +14,10 @@ public interface LoadingListener {
 
   void showContent(List<Integer> idsOfViewsNotToShow);
 
-  void showLoading(Viewable viewable);
-  void showLoading();
+  void showLoading(Viewable viewable, Object args);
+  void showLoading(Object args);
 
-  void showLoading(List<Integer> idsOfViewsNotToHide);
+  void showLoading(List<Integer> idsOfViewsNotToHide, Object args);
 
   void showEmpty(int icon, String title, String description);
 

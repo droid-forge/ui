@@ -38,14 +38,12 @@ public class LoadingViewable implements Viewable {
   }
 
   @Override
-  public void bind(View view) {
+  public void bind(View view,  Object args) {
     if (loadingStateProgressBarWidth != 0)
       progressBarLoading.getLayoutParams().width = loadingStateProgressBarWidth;
     if (loadingStateProgressBarHeight != 0)
       progressBarLoading.getLayoutParams().height = loadingStateProgressBarHeight;
     if (loadingStateProgressBarColor != 0) progressBarLoading.getIndeterminateDrawable()
         .setColorFilter(loadingStateProgressBarColor, PorterDuff.Mode.SRC_IN);
-
   }
-
 }

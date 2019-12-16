@@ -43,14 +43,22 @@ class MainActivity : AppCompatActivity(), PromiseAdapter.Listener<ViewablePoJo> 
 
     adapter = PromiseAdapter(ArrayMap<Class<*>, KClass<out Viewable>>().apply {
       put(ViewablePoJo::class.java, ViewablePoJoViewable::class)
-    }, this)
+    }, this, true)
 
     recycler_view.layoutManager = LinearLayoutManager(this)
 
     recycler_view.adapter = adapter
 
-    adapter.add(generate(50) {
+    adapter.add(generate(10) {
       ViewablePoJo("test $it")
     })
+
+    Promise.instance().executeOnUi({
+      adapter.args = null
+
+      adapter setList generate(50) {
+        ViewablePoJo("test $it")
+      }
+    }, 5000)
   }
 }
