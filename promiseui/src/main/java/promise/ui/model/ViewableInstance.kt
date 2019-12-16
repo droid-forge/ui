@@ -31,8 +31,8 @@ class ViewableInstance<T>(val t: T) {
             (viewClassObject!! as ViewHolder).init(view)
           }
 
-          override fun bind(view: View?) {
-            (viewClassObject!! as ViewHolder).bind(view)
+          override fun bind(view: View?, args: Any?) {
+            (viewClassObject!! as ViewHolder).bind(view, args)
           }
         }
       }

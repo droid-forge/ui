@@ -1,18 +1,21 @@
 package promise.uiapp.models
 
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import promise.ui.model.ViewHolder
 import promise.uiapp.R
 
 class ViewablePoJoViewable(private val viewablePoJo: ViewablePoJo) : promise.ui.model.Viewable {
 
+  lateinit var imageView: ImageView
   lateinit var textView: TextView
 
   override fun layout(): Int = R.layout.pojo_layout
 
   override fun init(view: View) {
     textView = view.findViewById(R.id.pojo_text)
+    imageView = view.findViewById(R.id.action_image)
   }
 
   override fun bind(view: View?) {

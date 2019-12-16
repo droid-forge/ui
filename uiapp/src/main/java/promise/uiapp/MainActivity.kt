@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity(), PromiseAdapter.Listener<ViewablePoJo> 
 
   override fun onClick(t: ViewablePoJo, id: Int) {
     Toast.makeText(this, "Clicked ${t.text}", Toast.LENGTH_LONG).show()
-    LogUtil.e("_MainActivity", "clicked the pojo", t)
+    LogUtil.e("_MainActivity", "clicked the pojo", t, " id ", id)
   }
 
   lateinit var adapter: PromiseAdapter<ViewablePoJo>
