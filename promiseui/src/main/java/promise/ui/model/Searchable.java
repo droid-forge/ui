@@ -19,6 +19,6 @@ package promise.ui.model;
  * Created by yoctopus on 11/21/17.
  */
 
-public interface Searchable extends Viewable {
+public interface Searchable {
     boolean onSearch(String query);
 }

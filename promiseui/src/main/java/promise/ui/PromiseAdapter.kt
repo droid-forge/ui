@@ -58,7 +58,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, va
   private var loadingView: LoadingViewable? = null
   private var visibleThreshold = 10
 
-  private lateinit var originalList: List<T>
+  private var originalList: List<T>? = null
 
   private var viewableClasses: MutableMap<String, KClass<out Viewable>>? = null
 
@@ -249,7 +249,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, va
   override fun getFilter(): Filter = object : Filter() {
     override fun performFiltering(charSequence: CharSequence): FilterResults {
       val results = FilterResults()
-      val filterData = originalList.filter { t: T ->
+      val filterData = originalList!!.filter { t: T ->
         t is Searchable &&
             t.onSearch(charSequence.toString())
       }
@@ -262,7 +262,7 @@ open class PromiseAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, va
     override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) =
         if (filterResults.count > 0)
           setList((filterResults.values as List<T>))
-        else setList(originalList)
+        else setList(originalList!!)
   }
 
   fun getList(): List<T> =

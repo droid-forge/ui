@@ -51,7 +51,7 @@ dependencies {
 
     implementation "com.android.support:exifinterface:$project.ext.supportLibVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$project.ext.kotlin_version"
-    api 'com.github.android-promise:commons:1.0-beta2'
+    api 'com.github.android-promise:commons:1.0'
     api 'io.reactivex.rxjava2:rxjava:2.2.12'
     api 'com.github.tbruyelle:rxpermissions:0.10.2'
     api 'com.android.support:recyclerview-v7:28.0.0'
