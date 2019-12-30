@@ -49,7 +49,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
   @SuppressLint("DiffUtilEquals")
   override fun areContentsTheSame(oldItem: T, newItem: T): Boolean =
       oldItem.hashCode() == newItem.hashCode()
-}), PaginatedAdapter<T>, Filterable {
+}), PaginatedAdapter<T> {
 
   private val TAG = LogUtil.makeTag(DiffAdapter::class.java)
   private val AdapterItems = "__adapter_items__"
@@ -67,6 +67,8 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
   private lateinit var originalList: List<T>
 
   private var viewableClasses: MutableMap<String, KClass<out Viewable>>? = null
+
+  private var searchHelper: SearchHelper? = null
 
   var isReverse: Boolean
     get() = indexer.reverse
@@ -247,28 +249,34 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
 
   override fun getItemCount(): Int = indexer.size()
 
-  open fun search(query: String) {
+  open fun search(query: String, helperResult: (Boolean) -> Unit) {
     if (originalList == null) originalList = getList()
-    filter.filter(query)
+    if (searchHelper == null) searchHelper = SearchHelper(originalList!!, helperResult)
+    searchHelper!!.filter.filter(query)
   }
 
-  override fun getFilter(): Filter = object : Filter() {
-    override fun performFiltering(charSequence: CharSequence): FilterResults {
-      val results = FilterResults()
-      val filterData = originalList.filter { t: T ->
-        t is Searchable &&
-            t.onSearch(charSequence.toString())
+  inner class SearchHelper(private val originalList: List<T>, private val helperResult: (Boolean) -> Unit): Filterable {
+    override fun getFilter(): Filter = object : Filter() {
+      override fun performFiltering(charSequence: CharSequence): FilterResults {
+        val results = FilterResults()
+        val filterData = originalList.filter { t: T ->
+          t is Searchable &&
+              t.onSearch(charSequence.toString())
+        }
+        results.values = filterData
+        if (!filterData.isEmpty()) results.count =
+            filterData.size else results.count = 0
+        return results
       }
-      results.values = filterData
-      if (!filterData.isEmpty()) results.count =
-          filterData.size else results.count = 0
-      return results
-    }
 
-    override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) =
-        if (filterResults.count > 0)
-          setList((filterResults.values as List<T>))
-        else setList(originalList)
+      override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) =
+          when {
+            charSequence.isNotEmpty() && filterResults.count == 0 -> helperResult(false)
+            filterResults.count > 0 -> setList((filterResults.values as List<T>))
+            charSequence.isEmpty() -> setList(originalList)
+            else -> helperResult(true)
+          }
+    }
   }
 
   fun getList(): List<T> =

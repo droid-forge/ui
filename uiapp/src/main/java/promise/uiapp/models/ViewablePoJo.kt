@@ -1,9 +1,11 @@
 package promise.uiapp.models
 
+import android.annotation.SuppressLint
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.facebook.shimmer.ShimmerFrameLayout
+import promise.ui.model.Searchable
 import promise.ui.model.ViewHolder
 import promise.uiapp.R
 
@@ -47,4 +49,7 @@ class ViewablePoJoViewHolder(private val viewablePoJo: ViewablePoJo) : ViewHolde
 }
 
 //@Viewable(layoutResource = R.layout.pojo_layout, viewHolderClass = ViewablePoJoViewHolder::class)
-class ViewablePoJo(val text: String)
+class ViewablePoJo(val text: String): Searchable {
+  @SuppressLint("DefaultLocale")
+  override fun onSearch(query: String): Boolean = text.toLowerCase().contains(query.toLowerCase())
+}

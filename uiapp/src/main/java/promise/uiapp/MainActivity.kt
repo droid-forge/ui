@@ -1,32 +1,21 @@
 package promise.uiapp
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.collection.ArrayMap
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 import promise.commons.Promise
 import promise.commons.data.log.LogUtil
 import promise.commons.model.List
-import promise.commons.model.Result
-import promise.ui.DataSource
 import promise.ui.PromiseAdapter
-import promise.ui.model.LoadingViewable
 import promise.ui.model.Viewable
 import promise.uiapp.models.ViewablePoJo
 import promise.uiapp.models.ViewablePoJoViewable
 import kotlin.reflect.KClass
-
-
-inline fun <T> generate(num: Int, function: (Int) -> T): List<T> {
-  val list = List<T>()
-  for (i in 0 until num) {
-    list.add(function(i))
-  }
-  return list
-}
 
 class MainActivity : AppCompatActivity(), PromiseAdapter.Listener<ViewablePoJo> {
 
@@ -41,6 +30,25 @@ class MainActivity : AppCompatActivity(), PromiseAdapter.Listener<ViewablePoJo> 
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
+    searchEditText.addTextChangedListener(object: TextWatcher {
+      override fun afterTextChanged(s: Editable) {
+        this.onTextChanged(s.toString(), 0, 0, 0)
+      }
+
+      override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+
+      }
+
+      override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        adapter.search(s.toString()){
+          if(!it) loading_view.showEmpty(R.drawable.ic_launcher_background,
+              "Searched list is empty",
+              "No item found with the query provided")
+          else loading_view.showContent()
+        }
+      }
+    })
+
     adapter = PromiseAdapter(ArrayMap<Class<*>, KClass<out Viewable>>().apply {
       put(ViewablePoJo::class.java, ViewablePoJoViewable::class)
     }, this, true)
@@ -49,14 +57,15 @@ class MainActivity : AppCompatActivity(), PromiseAdapter.Listener<ViewablePoJo> 
 
     recycler_view.adapter = adapter
 
-    adapter.add(generate(10) {
+    loading_view.showContent()
+    adapter.add(List.generate(10) {
       ViewablePoJo("test $it")
     })
 
     Promise.instance().executeOnUi({
       adapter.args = null
 
-      adapter setList generate(50) {
+      adapter setList List.generate(50) {
         ViewablePoJo("test $it")
       }
     }, 5000)
