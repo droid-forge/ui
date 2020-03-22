@@ -1,16 +1,14 @@
 /*
- *
- *  * Copyright 2017, Peter Vincent
- *  * Licensed under the Apache License, Version 2.0, Promise.
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package promise.ui.utils;
@@ -24,6 +22,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Base64;
@@ -63,7 +62,8 @@ public class BitmapUtil {
 
   public static void addImageToGallery(final String filePath, final Context context) {
     ContentValues values = new ContentValues();
-    values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+      values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
     values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
     values.put(MediaStore.MediaColumns.DATA, filePath);
     context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -102,17 +102,15 @@ public class BitmapUtil {
     FileOutputStream output = null;
     try {
       ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uriPhoto, "r");
-      FileDescriptor fd = pfd.getFileDescriptor();
+      FileDescriptor fd = null;
+      if (pfd != null) fd = pfd.getFileDescriptor();
       input = new FileInputStream(fd);
-
       String tempFilename = getTempFilename(context);
       output = new FileOutputStream(tempFilename);
 
       int read;
       byte[] bytes = new byte[4096];
-      while ((read = input.read(bytes)) != -1) {
-        output.write(bytes, 0, read);
-      }
+      while ((read = input.read(bytes)) != -1) output.write(bytes, 0, read);
       return tempFilename;
     } catch (IOException ignored) {
       // Nothing we can do
@@ -184,7 +182,7 @@ public class BitmapUtil {
       return null;
     }
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    b.compress(Bitmap.CompressFormat.JPEG, 50, bos);
+    if (b != null) b.compress(Bitmap.CompressFormat.JPEG, 50, bos);
     return b;
   }
 

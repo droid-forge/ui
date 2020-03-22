@@ -1,3 +1,16 @@
+/*
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package promise.uiapp.models
 
 import android.annotation.SuppressLint
@@ -5,11 +18,13 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.facebook.shimmer.ShimmerFrameLayout
-import promise.ui.model.Searchable
-import promise.ui.model.ViewHolder
+import promise.ui.Viewable
+import promise.ui.adapter.Searchable
+import promise.ui.adapter.ViewHolder
+import promise.ui.adapter.ViewableEntity
 import promise.uiapp.R
 
-class ViewablePoJoViewable(private val viewablePoJo: ViewablePoJo) : promise.ui.model.Viewable {
+class ViewablePoJoViewable(private val viewablePoJo: ViewablePoJo) : Viewable {
 
   lateinit var imageView: ImageView
   lateinit var textView: TextView
@@ -48,8 +63,22 @@ class ViewablePoJoViewHolder(private val viewablePoJo: ViewablePoJo) : ViewHolde
   lateinit var textView: TextView
 }
 
-//@Viewable(layoutResource = R.layout.pojo_layout, viewHolderClass = ViewablePoJoViewHolder::class)
+@ViewableEntity(layoutResource = R.layout.pojo_layout, viewHolderClass = ViewablePoJoViewHolder::class)
 class ViewablePoJo(val text: String): Searchable {
   @SuppressLint("DefaultLocale")
   override fun onSearch(query: String): Boolean = text.toLowerCase().contains(query.toLowerCase())
+}
+
+class ImplementingViewable(): Viewable {
+  override fun layout(): Int {
+    return R.layout.pojo_layout
+  }
+
+  override fun init(view: View?) {
+    // initialize the views
+  }
+
+  override fun bind(view: View?, args: Any?) {
+    //bind data to the views
+  }
 }

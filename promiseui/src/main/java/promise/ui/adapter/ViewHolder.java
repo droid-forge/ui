@@ -11,4 +11,11 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.adapter;
+
+import android.view.View;
+
+public interface ViewHolder {
+  void init(View view);
+  void bind(View view, Object args);
+}

@@ -11,4 +11,20 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.adapter;
+
+import promise.commons.model.List;
+import promise.commons.tx.PromiseResult;
+
+/**
+ * @param <T>
+ */
+public interface DataSource<T> {
+
+    /**
+     * @param response
+     * @param skip the offset index of data to load
+     * @param take, the number of items to load
+     */
+    void load(PromiseResult<List<T>, ?> response, int skip, int take);
+}

@@ -1,3 +1,16 @@
+/*
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package promise.ui.loading;
 
 import android.content.Context;
@@ -20,9 +33,9 @@ import java.util.Collections;
 import java.util.List;
 
 import promise.ui.R;
-import promise.ui.model.Viewable;
+import promise.ui.Viewable;
 
-public class ProgressLayout extends FrameLayout implements LoadingListener {
+public class LoadingLayout extends FrameLayout implements LoadingListener {
 
   private final String CONTENT = "type_content";
   private final String LOADING = "type_loading";
@@ -74,16 +87,16 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
 
   private String state = CONTENT;
 
-  public ProgressLayout(Context context) {
+  public LoadingLayout(Context context) {
     super(context);
   }
 
-  public ProgressLayout(Context context, AttributeSet attrs) {
+  public LoadingLayout(Context context, AttributeSet attrs) {
     super(context, attrs);
     init(attrs);
   }
 
-  public ProgressLayout(Context context, AttributeSet attrs, int defStyle) {
+  public LoadingLayout(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
     init(attrs);
   }
@@ -91,7 +104,7 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
   private void init(AttributeSet attrs) {
     inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-    TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ProgressLayout);
+    TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.LoadingLayout);
 
     /*//Loading state attrs
     loadingStateProgressBarWidth =
@@ -104,57 +117,57 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
         typedArray.getColor(R.styleable.ProgressFrameLayout_loadingProgressBarColor, Color.RED);*/
 
     loadingStateBackgroundColor =
-        typedArray.getColor(R.styleable.ProgressLayout_loadingBackgroundColor, Color.TRANSPARENT);
+        typedArray.getColor(R.styleable.LoadingLayout_loadingBackgroundColor, Color.TRANSPARENT);
 
     //Empty state attrs
     emptyStateImageWidth =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_emptyImageWidth, 308);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_emptyImageWidth, 308);
 
     emptyStateImageHeight =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_emptyImageHeight, 308);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_emptyImageHeight, 308);
 
     emptyStateTitleTextSize =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_emptyTitleTextSize, 15);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_emptyTitleTextSize, 15);
 
     emptyStateTitleTextColor =
-        typedArray.getColor(R.styleable.ProgressLayout_emptyTitleTextColor, Color.BLACK);
+        typedArray.getColor(R.styleable.LoadingLayout_emptyTitleTextColor, Color.BLACK);
 
     emptyStateContentTextSize =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_emptyContentTextSize, 14);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_emptyContentTextSize, 14);
 
     emptyStateContentTextColor =
-        typedArray.getColor(R.styleable.ProgressLayout_emptyContentTextColor, Color.BLACK);
+        typedArray.getColor(R.styleable.LoadingLayout_emptyContentTextColor, Color.BLACK);
 
     emptyStateBackgroundColor =
-        typedArray.getColor(R.styleable.ProgressLayout_emptyBackgroundColor, Color.TRANSPARENT);
+        typedArray.getColor(R.styleable.LoadingLayout_emptyBackgroundColor, Color.TRANSPARENT);
 
     //Error state attrs
     errorStateImageWidth =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_errorImageWidth, 308);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_errorImageWidth, 308);
 
     errorStateImageHeight =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_errorImageHeight, 308);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_errorImageHeight, 308);
 
     errorStateTitleTextSize =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_errorTitleTextSize, 15);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_errorTitleTextSize, 15);
 
     errorStateTitleTextColor =
-        typedArray.getColor(R.styleable.ProgressLayout_errorTitleTextColor, Color.BLACK);
+        typedArray.getColor(R.styleable.LoadingLayout_errorTitleTextColor, Color.BLACK);
 
     errorStateContentTextSize =
-        typedArray.getDimensionPixelSize(R.styleable.ProgressLayout_errorContentTextSize, 14);
+        typedArray.getDimensionPixelSize(R.styleable.LoadingLayout_errorContentTextSize, 14);
 
     errorStateContentTextColor =
-        typedArray.getColor(R.styleable.ProgressLayout_errorContentTextColor, Color.BLACK);
+        typedArray.getColor(R.styleable.LoadingLayout_errorContentTextColor, Color.BLACK);
 
     errorStateButtonTextColor =
-        typedArray.getColor(R.styleable.ProgressLayout_errorButtonTextColor, Color.BLACK);
+        typedArray.getColor(R.styleable.LoadingLayout_errorButtonTextColor, Color.BLACK);
 
     errorStateButtonBackgroundColor =
-        typedArray.getColor(R.styleable.ProgressLayout_errorButtonBackgroundColor, Color.WHITE);
+        typedArray.getColor(R.styleable.LoadingLayout_errorButtonBackgroundColor, Color.WHITE);
 
     errorStateBackgroundColor =
-        typedArray.getColor(R.styleable.ProgressLayout_errorBackgroundColor, Color.TRANSPARENT);
+        typedArray.getColor(R.styleable.LoadingLayout_errorBackgroundColor, Color.TRANSPARENT);
 
     typedArray.recycle();
 
@@ -182,7 +195,7 @@ public class ProgressLayout extends FrameLayout implements LoadingListener {
 
     loadingStateProgressBarColor =
         typedArray.getColor(R.styleable.ProgressFrameLayout_loadingProgressBarColor, Color.RED);*/
-    showLoading(new LoadingViewable().loadingStateProgressBarHeight(108).loadingStateProgressBarWidth(108), args);
+    showLoading(new LoadingViewable().loadingStateProgressBarHeight(108).loadingStateProgressBarWidth(), args);
   }
 
   @Override

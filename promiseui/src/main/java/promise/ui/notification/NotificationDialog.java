@@ -1,73 +1,73 @@
 /*
- *
- *  * Copyright 2017, Peter Vincent
- *  * Licensed under the Apache License, Version 2.0, Promise.
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package promise.ui.notif;
+package promise.ui.notification;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.view.View;
 import android.view.Window;
 
 import androidx.annotation.StringRes;
 
-public class NDialog extends AlertDialog {
+public class NotificationDialog extends AlertDialog {
 
   private String title, message;
-  private DButton positive, negative, neutral;
+  private DialogButton positive, negative, neutral;
   private CListener cListener;
   private OnAnswer listener;
   private boolean close = true;
 
-  public NDialog(
+  public NotificationDialog(
       Context context,
       String title,
       String message,
-      DButton positive,
-      DButton negative,
-      DButton neutral) {
+      DialogButton positive,
+      DialogButton negative,
+      DialogButton neutral) {
     super(context);
     this.title = title;
     this.message = message;
     this.positive = positive;
     this.negative = negative;
     this.neutral = neutral;
-    requestWindowFeature(Window.FEATURE_SWIPE_TO_DISMISS);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
+      requestWindowFeature(Window.FEATURE_SWIPE_TO_DISMISS);
     requestWindowFeature(Window.FEATURE_NO_TITLE);
     setCanceledOnTouchOutside(true);
   }
 
-  public NDialog(
+  public NotificationDialog(
       Context context,
       String title,
       String message,
-      DButton positive,
-      DButton negative,
-      DButton neutral,
+      DialogButton positive,
+      DialogButton negative,
+      DialogButton neutral,
       OnAnswer listener) {
     this(context, title, message, positive, negative, neutral);
     this.listener = listener;
   }
 
-  public NDialog(
+  public NotificationDialog(
       Context context,
       @StringRes int title,
       @StringRes int message,
-      DButton positive,
-      DButton negative,
-      DButton neutral) {
+      DialogButton positive,
+      DialogButton negative,
+      DialogButton neutral) {
     this(
         context,
         context.getResources().getString(title),
@@ -81,7 +81,7 @@ public class NDialog extends AlertDialog {
     this.cListener = cListener;
   }
 
-  public NDialog close(boolean close) {
+  public NotificationDialog close(boolean close) {
     this.close = close;
     return this;
   }
@@ -142,16 +142,16 @@ public class NDialog extends AlertDialog {
     void onAnswer(String t);
   }
 
-  public static class DButton {
+  public static class DialogButton {
     private String text = "";
     private int textId = 0;
     private BListener listener;
 
-    public DButton(String text, BListener listener) {
+    public DialogButton(String text, BListener listener) {
       this.text = text;
       this.listener = listener;
     }
-    public DButton(@StringRes int text, BListener listener) {
+    public DialogButton(@StringRes int text, BListener listener) {
       this.textId = text;
       this.listener = listener;
     }

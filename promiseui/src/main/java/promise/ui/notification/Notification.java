@@ -1,19 +1,17 @@
 /*
- *
- *  * Copyright 2017, Peter Vincent
- *  * Licensed under the Apache License, Version 2.0, Promise.
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package promise.ui.notif;
+package promise.ui.notification;
 
 import android.Manifest;
 import android.app.PendingIntent;
@@ -33,11 +31,11 @@ import promise.ui.utils.ApiHelper;
 public class Notification {
   private String TAG = LogUtil.makeTag(Notification.class);
 
-  private NType nType;
-  private Duration duration;
+  private NotificationType notificationType;
+  private ToastDuration toastDuration;
 
   private Context context;
-  private NDialog nDialog;
+  private NotificationDialog notificationDialog;
   private ProgressDialog progressDialog;
 
   public Notification(Context context) {
@@ -47,39 +45,39 @@ public class Notification {
   public void showDialog(
       String title,
       String message,
-      NDialog.DButton positive,
-      NDialog.DButton negative,
-      NDialog.DButton neutral) {
+      NotificationDialog.DialogButton positive,
+      NotificationDialog.DialogButton negative,
+      NotificationDialog.DialogButton neutral) {
 
-    NDialog nDialog = new NDialog(getContext(), title, message, positive, negative, neutral);
+    NotificationDialog notificationDialog = new NotificationDialog(getContext(), title, message, positive, negative, neutral);
 
-    nDialog.show();
+    notificationDialog.show();
   }
 
   public void showDialog(
       String title,
       String message,
-      NDialog.DButton positive,
-      NDialog.DButton negative,
-      NDialog.DButton neutral,
+      NotificationDialog.DialogButton positive,
+      NotificationDialog.DialogButton negative,
+      NotificationDialog.DialogButton neutral,
       boolean close) {
 
-    NDialog nDialog =
-        new NDialog(getContext(), title, message, positive, negative, neutral).close(close);
+    NotificationDialog notificationDialog =
+        new NotificationDialog(getContext(), title, message, positive, negative, neutral).close(close);
 
-    nDialog.show();
+    notificationDialog.show();
   }
 
   public void showDialog(
       String title,
       String message,
-      NDialog.DButton positive,
-      NDialog.DButton negative,
-      NDialog.DButton neutral,
-      NDialog.OnAnswer onAnswer) {
+      NotificationDialog.DialogButton positive,
+      NotificationDialog.DialogButton negative,
+      NotificationDialog.DialogButton neutral,
+      NotificationDialog.OnAnswer onAnswer) {
 
-    nDialog = new NDialog(getContext(), title, message, positive, negative, neutral, onAnswer);
-    nDialog.show();
+    notificationDialog = new NotificationDialog(getContext(), title, message, positive, negative, neutral, onAnswer);
+    notificationDialog.show();
   }
 
   public void showProgress(String message) {
@@ -150,8 +148,8 @@ public class Notification {
   }
 
   public void dismiss() {
-    if (nDialog != null) {
-      nDialog.dismiss();
+    if (notificationDialog != null) {
+      notificationDialog.dismiss();
     }
     if (progressDialog != null) {
       progressDialog.dismiss();
@@ -159,12 +157,12 @@ public class Notification {
   }
 
   public void showToast(String message) {
-    NToast toast = new NToast(getContext(), message);
+    NotificationToast toast = new NotificationToast(getContext(), message);
     toast.show();
   }
 
-  public void showToast(String message, Duration duration) {
-    NToast toast = new NToast(getContext(), message);
+  public void showToast(String message, ToastDuration toastDuration) {
+    NotificationToast toast = new NotificationToast(getContext(), message);
     toast.show();
   }
 
@@ -197,15 +195,15 @@ public class Notification {
     }
   }
 
-  public void vibrate(Duration duration) {
+  public void vibrate(ToastDuration toastDuration) {
     final int length;
-    switch (duration.getLength()) {
-      case Duration.LON:
+    switch (toastDuration.getLength()) {
+      case ToastDuration.LON:
         {
           length = 1000;
           break;
         }
-      case Duration.SHO:
+      case ToastDuration.SHO:
         {
           length = 500;
           break;
@@ -240,12 +238,12 @@ public class Notification {
       String message,
       @DrawableRes int small_icon,
       PendingIntent pendingIntent) {
-    NBar.notify(getContext(), title, message, bitmap, small_icon, pendingIntent);
+    StatusBarNotification.notify(getContext(), title, message, bitmap, small_icon, pendingIntent);
   }
 
   public void showNotification(
       Bitmap bitmap, String title, String message, @DrawableRes int small_icon, int progress) {
-    NBar.notifyWithProgress(getContext(), title, message, bitmap, small_icon, progress);
+    StatusBarNotification.notifyWithProgress(getContext(), title, message, bitmap, small_icon, progress);
   }
 
   public Context getContext() {

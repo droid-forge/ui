@@ -11,4 +11,20 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.notification;
+
+
+public enum ToastDuration {
+    LONG(1),
+    SHORT(2);
+    static final int LON = 1;
+    static final int SHO = 2;
+    private int length;
+    ToastDuration(int length) {
+        this.length = length;
+    }
+
+    public int getLength() {
+        return length;
+    }
+}

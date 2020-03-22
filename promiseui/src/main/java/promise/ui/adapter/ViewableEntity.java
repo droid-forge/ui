@@ -11,4 +11,25 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.adapter;
+
+import androidx.annotation.LayoutRes;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import promise.ui.adapter.ViewHolder;
+
+
+@Target(value = {ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface ViewableEntity {
+
+  @LayoutRes int layoutResource();
+
+  Class<? extends ViewHolder> viewHolderClass();
+}

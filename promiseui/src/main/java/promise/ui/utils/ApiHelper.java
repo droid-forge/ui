@@ -1,16 +1,14 @@
 /*
- *
- *  * Copyright 2017, Peter Vincent
- *  * Licensed under the Apache License, Version 2.0, Promise.
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package promise.ui.utils;
@@ -40,7 +38,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
-import promise.commons.Promise;
+import promise.commons.AndroidPromise;
 import promise.commons.model.List;
 import promise.commons.util.ClassUtil;
 import promise.commons.util.Conditions;
@@ -48,7 +46,7 @@ import promise.commons.util.Conditions;
 
 public class ApiHelper {
     public static boolean isGooglePlayInstalled() {
-        PackageManager pm = Promise.instance().context().getPackageManager();
+        PackageManager pm = AndroidPromise.instance().context().getPackageManager();
         boolean app_installed;
         try {
             PackageInfo info = pm.getPackageInfo(
@@ -56,9 +54,8 @@ public class ApiHelper {
                     PackageManager.GET_ACTIVITIES);
             String label = (String)
                     info.applicationInfo.loadLabel(pm);
-            app_installed = (label != null
-                    && label.equals(
-                    "Google Play Store"));
+            app_installed = label.equals(
+                    "Google Play Store");
         } catch (PackageManager.NameNotFoundException e) {
             app_installed = false;
         }
@@ -212,11 +209,13 @@ public class ApiHelper {
                                          final CallBack callBack,
                                          final String permission) {
         RxPermissions rxPermissions = new RxPermissions(activity);
-        rxPermissions.request(permission)
+        AndroidPromise.instance().getCompositeDisposable().add(
+            rxPermissions.request(permission)
                 .subscribe(aBoolean -> {
                     if (aBoolean) callBack.onSuccess(permission);
                     else callBack.onFailure(permission);
-                });
+                })
+        );
     }
 
 
@@ -242,23 +241,23 @@ public class ApiHelper {
     }
 
     public static boolean hasFroyo() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO;
+        return true;
     }
 
     public static boolean hasGingerbread() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD;
+        return true;
     }
 
     public static boolean hasHoneycomb() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
+        return true;
     }
 
     public static boolean hasHoneycombMR1() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1;
+        return true;
     }
 
     public static boolean hasICS() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH;
+        return true;
     }
 
     public static boolean hasJellyBean() {
@@ -282,7 +281,7 @@ public class ApiHelper {
     }
 
     public static boolean supportsPreferenceHeaders() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
+        return true;
     }
 
     public interface VERSION_CODES {
@@ -301,16 +300,16 @@ public class ApiHelper {
     }
 
     public static final boolean HAS_ACTION_BAR_HOME_BUTTON =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true;
 
     public static final boolean HAS_ICS =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true;
 
     public static final boolean USE_888_PIXEL_FORMAT =
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
 
     public static final boolean ENABLE_PHOTO_EDITOR =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true;
 
     public static final boolean HAS_VIEW_SYSTEM_UI_FLAG_LAYOUT_STABLE =
             ClassUtil.hasField(View.class, "SYSTEM_UI_FLAG_LAYOUT_STABLE");
@@ -325,7 +324,7 @@ public class ApiHelper {
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
 
     public static final boolean HAS_REUSING_BITMAP_IN_BITMAP_FACTORY =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_SET_BEAM_PUSH_URIS =
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
@@ -338,19 +337,19 @@ public class ApiHelper {
             "android.graphics.SurfaceTexture", "release");
 
     public static final boolean HAS_SURFACE_TEXTURE =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_MTP =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB_MR1;
+        true;
 
     public static final boolean HAS_AUTO_FOCUS_MOVE_CALLBACK =
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
 
     public static final boolean HAS_REMOTE_VIEWS_SERVICE =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_INTENT_EXTRA_LOCAL_ONLY =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_SET_SYSTEM_UI_VISIBILITY =
             ClassUtil.hasMethod(View.class, "setSystemUiVisibility", int.class);
@@ -380,25 +379,26 @@ public class ApiHelper {
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
 
     public static final boolean HAS_OLD_PANORAMA =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true;
 
     public static final boolean HAS_TIME_LAPSE_RECORDING =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_ZOOM_WHEN_RECORDING =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true;
 
     public static final boolean HAS_CAMERA_FOCUS_AREA =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true;
 
     public static final boolean HAS_CAMERA_METERING_AREA =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true
+        ;
 
     public static final boolean HAS_FINE_RESOLUTION_QUALITY_LEVELS =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_MOTION_EVENT_TRANSFORM =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_EFFECTS_RECORDING = false;
 
@@ -407,35 +407,35 @@ public class ApiHelper {
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN_MR1;
 
     public static final boolean HAS_GET_SUPPORTED_VIDEO_SIZE =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_SET_ICON_ATTRIBUTE =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_MEDIA_PROVIDER_FILES_TABLE =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_SURFACE_TEXTURE_RECORDING =
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
 
     public static final boolean HAS_ACTION_BAR =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     // Ex: View.setTranslationX.
     public static final boolean HAS_VIEW_TRANSFORM_PROPERTIES =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean HAS_CAMERA_HDR =
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN_MR1;
 
     public static final boolean HAS_OPTIONS_IN_MUTABLE =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB;
+        true;
 
     public static final boolean CAN_START_PREVIEW_IN_JPEG_CALLBACK =
-            Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH;
+        true;
 
     public static final boolean HAS_VIEW_PROPERTY_ANIMATOR =
-            Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB_MR1;
+        true;
 
     public static final boolean HAS_POST_ON_ANIMATION =
             Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
@@ -447,8 +447,8 @@ public class ApiHelper {
 
     public static String getAppVersionCode() {
         try {
-            PackageInfo packageInfo = Promise.instance().context()
-                    .getPackageManager().getPackageInfo(Promise.instance().context().getPackageName(), 0);
+            PackageInfo packageInfo = AndroidPromise.instance().context()
+                    .getPackageManager().getPackageInfo(AndroidPromise.instance().context().getPackageName(), 0);
             return String.valueOf(packageInfo.versionName);
         } catch (PackageManager.NameNotFoundException e) {
             return "";

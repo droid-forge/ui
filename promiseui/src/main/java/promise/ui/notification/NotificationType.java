@@ -11,4 +11,30 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.notification;
+
+/**
+ * Created by yoctopus on 11/13/16.
+ */
+
+public enum NotificationType {
+    WARNING(1),
+    ERROR(2),
+    FAILURE(3),
+    SUCCESS(4),
+    INFO(5);
+    static final int WARN = 1;
+    static final int ERR = 2;
+    static final int FAIL = 3;
+    static final int SUCC = 4;
+    static final int INF = 5;
+    private final int type;
+
+    NotificationType(int t) {
+        type = t;
+    }
+
+    public int getType() {
+        return type;
+    }
+}

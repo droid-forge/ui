@@ -1,21 +1,18 @@
 /*
- *
- *  * Copyright 2017, Peter Vincent
- *  * Licensed under the Apache License, Version 2.0, Promise.
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package promise.ui
+package promise.ui.adapter
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -25,33 +22,26 @@ import android.widget.Filterable
 import androidx.annotation.IdRes
 import androidx.collection.ArrayMap
 import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import promise.commons.Promise
 import promise.commons.data.log.LogUtil
 import promise.commons.model.List
-import promise.commons.model.Result
+import promise.commons.tx.PromiseResult
 import promise.commons.util.Conditions
-import promise.ui.model.LoadingViewable
-import promise.ui.model.Searchable
-import promise.ui.model.Viewable
-import promise.ui.model.ViewableInstance
+import promise.ui.UIJobScheduler
+import promise.ui.Viewable
 import java.util.*
 import kotlin.reflect.KClass
 
-open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var args: Any?) : ListAdapter<T, DiffAdapter<T>.Holder>(object : DiffUtil.ItemCallback<T>() {
-  override fun areItemsTheSame(oldItem: T, newItem: T): Boolean = oldItem == oldItem
+/**
+ * Created by yoctopus on 11/6/17.
+ */
+open class PromiseAdapter<T : Any>(list: List<T>,
+                                   var listener: Listener<T>?, var args: Any?) : RecyclerView.Adapter<PromiseAdapter<T>.Holder>(), PaginatedAdapter<T> {
 
-  @SuppressLint("DiffUtilEquals")
-  override fun areContentsTheSame(oldItem: T, newItem: T): Boolean =
-      oldItem.hashCode() == newItem.hashCode()
-}), PaginatedAdapter<T> {
-
-  private val TAG = LogUtil.makeTag(DiffAdapter::class.java)
+  private val TAG: String = LogUtil.makeTag(PromiseAdapter::class.java)
   private val AdapterItems = "__adapter_items__"
   private val indexer: Indexer
   private var list: List<Any>? = null
@@ -64,7 +54,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
   private var loadingView: LoadingViewable? = null
   private var visibleThreshold = 10
 
-  private lateinit var originalList: List<T>
+  private var originalList: List<T>? = null
 
   private var viewableClasses: MutableMap<String, KClass<out Viewable>>? = null
 
@@ -89,20 +79,20 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
       this.list!!.add(ViewableInstance(it))
     }
     indexer = Indexer()
+    this.setHasStableIds(true)
   }
 
-
-  fun swipe(swipeListener: Swipe<T>): DiffAdapter<T> {
+  fun swipe(swipeListener: Swipe<T>): PromiseAdapter<T> {
     this.swipeListener = swipeListener
     return this
   }
 
-  fun onAfterInitListener(onAfterInitListener: OnAfterInitListener): DiffAdapter<*> {
+  fun onAfterInitListener(onAfterInitListener: OnAfterInitListener): PromiseAdapter<*> {
     this.onAfterInitListener = onAfterInitListener
     return this
   }
 
-  fun alternatingColor(color: Int): DiffAdapter<T> {
+  fun alternatingColor(color: Int): PromiseAdapter<T> {
     this.alternatingColor = color
     return this
   }
@@ -110,7 +100,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
   @JvmOverloads
   fun withPagination(dataSource: DataSource<T>,
                      loadingView: LoadingViewable,
-                     visibleThreshold: Int = 10): DiffAdapter<T> {
+                     visibleThreshold: Int = 10): PromiseAdapter<T> {
     this.dataSource = dataSource
     this.loadingView = loadingView
     this.visibleThreshold = visibleThreshold
@@ -121,7 +111,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
     indexer.add(Conditions.checkNotNull(t))
   }
 
-  infix fun unshift(t: T) {
+  infix fun unShift(t: T) {
     indexer.unshift(Conditions.checkNotNull(t))
   }
 
@@ -196,10 +186,10 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-          if (viewHolder is DiffAdapter<*>.Holder) {
+          if (viewHolder is PromiseAdapter<*>.Holder) {
             val response: Response = object : Response {
               override fun call() {
-                /*update(holder.viewHolder.getT());*/
+                update(viewHolder.viewableInstance.t as T)
               }
             }
             when (direction) {
@@ -214,13 +204,14 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
 
     if (dataSource != null) {
       recyclerView.addOnScrollListener(PaginationListener(this,
-          dataSource!!,recyclerView.layoutManager!!, visibleThreshold))
+          dataSource!!, recyclerView.layoutManager!!, visibleThreshold))
       addLoadingView()
-      dataSource!!.load(Result<List<T>, Throwable>()
-          .withCallBack {
+      dataSource!!.load(PromiseResult<List<T>, Throwable>()
+          .withCallback {
             clear()
             this add it
           }, 0, visibleThreshold)
+
     }
   }
 
@@ -229,14 +220,13 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
     notifyDataSetChanged()
   }
 
-  override fun hasLoader(): Boolean {
-    return getList().last() is LoadingViewable
-  }
+  override fun hasLoader(): Boolean = getList().last() is LoadingViewable
 
   override fun removeLoader() {
     getList().removeAt(getList().size - 1)
     notifyItemRemoved(itemCount)
   }
+
   override fun onBindViewHolder(holder: Holder, position: Int) {
     if (holder is LoadingViewable) return
     val t = list!![position]
@@ -272,8 +262,14 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
       override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) =
           when {
             charSequence.isNotEmpty() && filterResults.count == 0 -> helperResult(false)
-            filterResults.count > 0 -> setList((filterResults.values as List<T>))
-            charSequence.isEmpty() -> setList(originalList)
+            filterResults.count > 0 -> {
+              helperResult(true)
+              setList((filterResults.values as List<T>))
+            }
+            charSequence.isEmpty() -> {
+              helperResult(true)
+              setList(originalList)
+            }
             else -> helperResult(true)
           }
     }
@@ -378,7 +374,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
           }
 
       } else {
-        val fields = List(Arrays.asList(*viewableInstance.viewable().javaClass.declaredFields))
+        val fields = List(listOf(*viewableInstance.viewable().javaClass.declaredFields))
         for (field in fields)
           try {
             val viewable = viewableInstance.viewable()
@@ -412,11 +408,11 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
         val instance = ViewableInstance(t)
         list!!.add(instance)
         if (reverse) list!!.reverse()
-        Promise.instance().executeOnUi { this@DiffAdapter.notifyDataSetChanged() }
+        UIJobScheduler.submitJob { this@PromiseAdapter.notifyDataSetChanged() }
       } else {
         val instance = ViewableInstance(t)
         list!!.add(instance)
-        Promise.instance().executeOnUi { notifyItemInserted(0) }
+        UIJobScheduler.submitJob { notifyItemInserted(0) }
       }
     }
 
@@ -427,22 +423,22 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
         list1.add(t)
         list1.addAll(list!!.map { (it as ViewableInstance<T>).t })
         setList(list1)
-        Promise.instance().executeOnUi { this@DiffAdapter.notifyDataSetChanged() }
+        UIJobScheduler.submitJob { this@PromiseAdapter.notifyDataSetChanged() }
       } else {
         add(t)
       }
     }
 
     internal infix fun setList(list: List<T>) {
-      this@DiffAdapter.list = list.map { ViewableInstance(it) }
-      Promise.instance().executeOnUi { this@DiffAdapter.notifyDataSetChanged() }
+      this@PromiseAdapter.list = list.map { ViewableInstance(it) }
+      UIJobScheduler.submitJob { this@PromiseAdapter.notifyDataSetChanged() }
     }
 
     internal infix fun remove(t: T) {
       if (list == null) return
       val instance = list!!.find { i -> (i as ViewableInstance<T>).t === t }
       list!!.remove(instance)
-      Promise.instance().executeOnUi { this@DiffAdapter.notifyDataSetChanged() }
+      UIJobScheduler.submitJob { this@PromiseAdapter.notifyDataSetChanged() }
     }
 
     internal infix fun update(viewHolder: T) {
@@ -456,7 +452,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
     }
 
     internal fun updateAll() {
-      Promise.instance().executeOnUi { this@DiffAdapter.notifyDataSetChanged() }
+      UIJobScheduler.submitJob { this@PromiseAdapter.notifyDataSetChanged() }
     }
 
     internal infix fun add(list: List<T>) {
@@ -466,7 +462,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
     internal fun clear() {
       if (list == null || list!!.isEmpty()) return
       list!!.clear()
-      Promise.instance().executeOnUi { this@DiffAdapter.notifyDataSetChanged() }
+      UIJobScheduler.submitJob { this@PromiseAdapter.notifyDataSetChanged() }
     }
 
     internal fun size(): Int = if (list == null || list!!.isEmpty()) 0 else list!!.size
@@ -476,9 +472,7 @@ open class DiffAdapter<T : Any>(list: List<T>, var listener: Listener<T>?, var a
     }
   }
 
-  inner class WrapContentLinearLayoutManager : LinearLayoutManager {
-
-    constructor(context: Context, orientation: Int, reverseLayout: Boolean) : super(context, orientation, reverseLayout) {}
+  inner class WrapContentLinearLayoutManager(context: Context, orientation: Int, reverseLayout: Boolean) : LinearLayoutManager(context, orientation, reverseLayout) {
 
     override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State) {
       try {

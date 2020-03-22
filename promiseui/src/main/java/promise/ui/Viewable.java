@@ -11,4 +11,12 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui;
+
+import androidx.annotation.LayoutRes;
+
+import promise.ui.adapter.ViewHolder;
+
+public interface Viewable extends ViewHolder {
+    @LayoutRes int layout();
+}

@@ -1,6 +1,6 @@
 /*
- * Copyright 2017, Solutech RMS
- * Licensed under the Apache License, Version 2.0, "Solutech Limited".
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package promise.ui;
+package promise.ui.adapter;
 
 import android.content.Context;
 import android.content.res.TypedArray;

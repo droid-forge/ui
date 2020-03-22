@@ -1,18 +1,32 @@
+/*
+ * Copyright 2017, Peter Vincent
+ * Licensed under the Apache License, Version 2.0, Android Promise.
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package promise.uiapp
 
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.collection.ArrayMap
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
-import promise.commons.Promise
+import promise.commons.AndroidPromise
 import promise.commons.data.log.LogUtil
 import promise.commons.model.List
-import promise.ui.PromiseAdapter
-import promise.ui.model.Viewable
+import promise.ui.adapter.PromiseAdapter
+import promise.ui.Viewable
 import promise.uiapp.models.ViewablePoJo
 import promise.uiapp.models.ViewablePoJoViewable
 import kotlin.reflect.KClass
@@ -57,17 +71,34 @@ class MainActivity : AppCompatActivity(), PromiseAdapter.Listener<ViewablePoJo> 
 
     recycler_view.adapter = adapter
 
+    loading_view.showLoading(null)
+
     loading_view.showContent()
+
     adapter.add(List.generate(10) {
       ViewablePoJo("test $it")
     })
 
-    Promise.instance().executeOnUi({
+    AndroidPromise.instance().executeOnUi({
       adapter.args = null
 
       adapter setList List.generate(50) {
         ViewablePoJo("test $it")
       }
     }, 5000)
+  }
+}
+
+class LoadingViewable(private val message: String): Viewable {
+  override fun layout(): Int {
+    return R.layout.loading_viewable
+  }
+
+  override fun init(view: View?) {
+    // init loading layout views
+  }
+
+  override fun bind(view: View?, args: Any?) {
+    // bind message to the views
   }
 }

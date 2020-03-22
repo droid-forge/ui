@@ -11,4 +11,12 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.adapter;
+
+/**
+ * Created by yoctopus on 11/21/17.
+ */
+
+public interface Searchable {
+    boolean onSearch(String query);
+}

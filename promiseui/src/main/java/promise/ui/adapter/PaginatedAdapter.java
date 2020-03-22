@@ -11,4 +11,17 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.adapter;
+
+import promise.commons.model.List;
+
+public interface PaginatedAdapter<T> {
+
+   void add(List<T> list);
+
+   boolean hasLoader();
+
+   void addLoadingView();
+
+   void removeLoader();
+}

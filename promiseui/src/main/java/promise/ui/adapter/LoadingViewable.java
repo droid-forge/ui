@@ -11,4 +11,14 @@
  * limitations under the License.
  */
 
-include 'promiseui', 'uiapp'
+package promise.ui.adapter;
+
+import android.view.View;
+
+import androidx.annotation.LayoutRes;
+
+public interface LoadingViewable  {
+    @LayoutRes
+    int layout();
+    void init(View view);
+}
